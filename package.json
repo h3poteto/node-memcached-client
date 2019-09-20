@@ -1,0 +1,13 @@
+{
+  "name": "memcached-client",
+  "version": "0.1.0",
+  "description": "Memcached client for nodejs using typescript",
+  "main": "./lib/src/index.js",
+  "typings": "./lib/src/index.d.ts",
+  "repository": "git@github.com:h3poteto/node-memcached-client.git",
+  "author": "h3poteto",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^3.6.3"
+  }
+}

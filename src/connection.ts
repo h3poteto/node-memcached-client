@@ -1,6 +1,6 @@
 import * as net from 'net'
 import { EventEmitter } from 'events'
-import { singleDataParser, Metadata } from './parser'
+import { singleDataParser, Metadata, parseCode } from './parser'
 
 export class Connection extends EventEmitter {
   public host: string
@@ -65,7 +65,7 @@ export class Connection extends EventEmitter {
     }
   }
 
-  public get(key: string): Promise<Metadata> {
+  public get(key: string): Promise<Metadata | null> {
     return new Promise((resolve, reject) => {
       const command = `get ${key}`
       if (!this._socket) {
@@ -74,15 +74,38 @@ export class Connection extends EventEmitter {
         return
       }
       const readData = (chunk: Buffer) => {
-        const data = singleDataParser(chunk)
         this._socket!.removeListener('data', readData)
-        resolve(data)
+        const code = parseCode(chunk)
+        switch (code) {
+          case ResponseCode.ERROR:
+          case ResponseCode.SERVER_ERROR:
+          case ResponseCode.CLIENT_ERROR:
+            return reject(code)
+          case ResponseCode.END:
+            return resolve(null)
+          default:
+            const data = singleDataParser(chunk)
+            return resolve(data)
+        }
       }
       this._socket.on('data', readData)
       this._socket.write(Buffer.from(command, 'utf8'))
       this._socket.write('\r\n')
     })
   }
+}
+
+enum ResponseCode {
+  END = 'END',
+  STORED = 'STORED',
+  NOT_STORED = 'NOT_STORED',
+  NOT_FOUND = 'NOT_FOUND',
+  EXISTS = 'EXISTS',
+  DELETED = 'DELETED',
+  TOUCHED = 'TOUCHED',
+  ERROR = 'ERROR',
+  CLIENT_ERROR = 'CLIENT_ERROR',
+  SERVER_ERROR = 'SERVER_ERROR'
 }
 
 export class ConnectionLost extends Error {

@@ -1,44 +1,46 @@
 import * as net from 'net'
 import { EventEmitter } from 'events'
-
-export type Options = {}
+import { singleDataParser, Metadata } from './parser'
 
 export class Connection extends EventEmitter {
-  private host: string
-  private port: number
-  private socket: net.Socket | null
+  public host: string
+  public port: number
+  public timeout: number
+  private _socket: net.Socket | null
   private _connectionClosed: boolean
   private _reconnectInterval: number
 
-  constructor(host: string, port: number) {
+  constructor(host: string, port: number, timeout: number) {
     super()
 
     this.host = host
     this.port = port
-    this.socket = null
+    this.timeout = timeout
+    this._socket = null
     this._connectionClosed = false
     this._reconnectInterval = 1000
   }
 
-  public connection() {
+  public connect() {
     const connectOptions: net.NetConnectOpts = {
       host: this.host,
-      port: this.port
+      port: this.port,
+      timeout: this.timeout
     }
-    this.socket = net.connect(connectOptions)
+    this._socket = net.connect(connectOptions)
     this._connectionClosed = false
 
-    this.socket.on('error', () => this.emit('error'))
-    this.socket.on('timeout', () => this.emit('timeout'))
-    this.socket.on('connect', () => this.handleConnect())
-    this.socket.on('close', () => this.handleClose())
+    this._socket.on('error', () => this.emit('error'))
+    this._socket.on('timeout', () => this.emit('timeout'))
+    this._socket.on('connect', () => this.handleConnect())
+    this._socket.on('close', () => this.handleClose())
   }
 
   public close() {
     this._connectionClosed = true
-    if (this.socket) {
-      this.socket.end()
-      this.socket = null
+    if (this._socket) {
+      this._socket.end()
+      this._socket = null
     }
   }
 
@@ -55,11 +57,36 @@ export class Connection extends EventEmitter {
   }
 
   private reconnect() {
-    if (this.socket) {
+    if (this._socket) {
       setTimeout(() => {
         console.warn('reconnecting...')
-        this.connection()
+        this.connect()
       }, this._reconnectInterval)
     }
+  }
+
+  public get(key: string): Promise<Metadata> {
+    return new Promise((resolve, reject) => {
+      const command = `get ${key}`
+      if (!this._socket) {
+        const err = new ConnectionLost('connection is null')
+        reject(err)
+        return
+      }
+      const readData = (chunk: Buffer) => {
+        const data = singleDataParser(chunk)
+        this._socket!.removeListener('data', readData)
+        resolve(data)
+      }
+      this._socket.on('data', readData)
+      this._socket.write(Buffer.from(command, 'utf8'))
+      this._socket.write('\r\n')
+    })
+  }
+}
+
+export class ConnectionLost extends Error {
+  constructor(msg: string) {
+    super(msg)
   }
 }

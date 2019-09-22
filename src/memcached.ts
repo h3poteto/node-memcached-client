@@ -15,16 +15,12 @@ export class Memcached extends EventEmitter {
   public options: Options
   private connection: Connection | null
 
-  constructor(host: string, port: number, options: Options | null) {
+  constructor(host: string, port: number, options: Options = defaultOptions) {
     super()
     this.host = host
     this.port = port
     this.connection = null
-    if (options) {
-      this.options = options
-    } else {
-      this.options = defaultOptions
-    }
+    this.options = options
   }
 
   public connect(): Promise<Connection> {

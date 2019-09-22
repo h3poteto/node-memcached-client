@@ -32,8 +32,8 @@ export class Connection extends EventEmitter {
 
     this._socket.on('error', () => this.emit('error'))
     this._socket.on('timeout', () => this.emit('timeout'))
-    this._socket.on('connect', () => this.handleConnect())
-    this._socket.on('close', () => this.handleClose())
+    this._socket.on('connect', () => this._handleConnect())
+    this._socket.on('close', () => this._handleClose())
   }
 
   public close() {
@@ -44,14 +44,14 @@ export class Connection extends EventEmitter {
     }
   }
 
-  private handleClose() {
+  private _handleClose() {
     console.info('closed')
     if (!this._connectionClosed) {
       this.reconnect()
     }
   }
 
-  private handleConnect() {
+  private _handleConnect() {
     console.info('connected')
     this.emit('connected')
   }
@@ -90,6 +90,36 @@ export class Connection extends EventEmitter {
       }
       this._socket.on('data', readData)
       this._socket.write(Buffer.from(command, 'utf8'))
+      this._socket.write('\r\n')
+    })
+  }
+
+  public set(key: string, value: string, isCompress: boolean = false, expires: number = 0): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!this._socket) {
+        const err = new ConnectionLost('connection is null')
+        return reject(err)
+      }
+      const byteSize = Buffer.byteLength(value, 'utf8')
+      const command = `set ${key} ${isCompress ? 1 : 0} ${expires} ${byteSize}`
+
+      const readData = (chunk: Buffer) => {
+        console.log(chunk.toString())
+        this._socket!.removeListener('data', readData)
+        const code = parseCode(chunk)
+        switch (code) {
+          case ResponseCode.EXISTS:
+          case ResponseCode.STORED:
+          case ResponseCode.NOT_STORED:
+            return resolve(code)
+          default:
+            return reject(chunk.toString())
+        }
+      }
+      this._socket.on('data', readData)
+      this._socket.write(Buffer.from(command, 'utf8'))
+      this._socket.write('\r\n')
+      this._socket.write(Buffer.from(value, 'utf8'))
       this._socket.write('\r\n')
     })
   }

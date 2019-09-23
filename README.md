@@ -1,4 +1,7 @@
 # node-memcached-client
+[![Build Status](https://travis-ci.com/h3poteto/node-memcached-client.svg?branch=master)](https://travis-ci.com/h3poteto/node-memcached-client)
+[![npm](https://img.shields.io/npm/v/memcached-client)](https://www.npmjs.com/package/memcached-client)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/h3poteto/node-memcached-client)](https://github.com/h3poteto/node-memcached-client/releases)
 
 A Memcached client library for node.js. This library written in typescript and define promisified methods.
 

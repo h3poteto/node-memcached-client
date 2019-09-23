@@ -104,7 +104,6 @@ export class Connection extends EventEmitter {
       const command = `set ${key} ${isCompress ? 1 : 0} ${expires} ${byteSize}`
 
       const readData = (chunk: Buffer) => {
-        console.log(chunk.toString())
         this._socket!.removeListener('data', readData)
         const code = parseCode(chunk)
         switch (code) {
@@ -120,6 +119,29 @@ export class Connection extends EventEmitter {
       this._socket.write(Buffer.from(command, 'utf8'))
       this._socket.write('\r\n')
       this._socket.write(Buffer.from(value, 'utf8'))
+      this._socket.write('\r\n')
+    })
+  }
+
+  public delete(key: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!this._socket) {
+        const err = new ConnectionLost('connection is null')
+        return reject(err)
+      }
+      const command = `delete ${key}`
+      const readData = (chunk: Buffer) => {
+        this._socket!.removeListener('data', readData)
+        const code = parseCode(chunk)
+        switch (code) {
+          case ResponseCode.DELETED:
+            return resolve(code)
+          default:
+            return reject(chunk.toString())
+        }
+      }
+      this._socket.on('data', readData)
+      this._socket.write(Buffer.from(command, 'utf8'))
       this._socket.write('\r\n')
     })
   }

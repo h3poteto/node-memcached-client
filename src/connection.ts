@@ -2,6 +2,19 @@ import * as net from 'net'
 import { EventEmitter } from 'events'
 import { singleDataParser, Metadata, parseCode } from './parser'
 
+enum ResponseCode {
+  END = 'END',
+  STORED = 'STORED',
+  NOT_STORED = 'NOT_STORED',
+  NOT_FOUND = 'NOT_FOUND',
+  EXISTS = 'EXISTS',
+  DELETED = 'DELETED',
+  TOUCHED = 'TOUCHED',
+  ERROR = 'ERROR',
+  CLIENT_ERROR = 'CLIENT_ERROR',
+  SERVER_ERROR = 'SERVER_ERROR'
+}
+
 export class Connection extends EventEmitter {
   public host: string
   public port: number
@@ -92,8 +105,7 @@ export class Connection extends EventEmitter {
           case ResponseCode.END:
             return resolve(null)
           default:
-            const data = singleDataParser(chunk)
-            return resolve(data)
+            return resolve(singleDataParser(chunk))
         }
       }
       this._socket.on('data', readData)
@@ -118,11 +130,9 @@ export class Connection extends EventEmitter {
           case ResponseCode.EXISTS:
           case ResponseCode.STORED:
           case ResponseCode.NOT_STORED:
-            resolve(code)
-            return
+            return resolve(code)
           default:
-            reject(chunk.toString())
-            return
+            return reject(chunk.toString())
         }
       }
       this._socket.on('data', readData)
@@ -157,21 +167,4 @@ export class Connection extends EventEmitter {
   }
 }
 
-enum ResponseCode {
-  END = 'END',
-  STORED = 'STORED',
-  NOT_STORED = 'NOT_STORED',
-  NOT_FOUND = 'NOT_FOUND',
-  EXISTS = 'EXISTS',
-  DELETED = 'DELETED',
-  TOUCHED = 'TOUCHED',
-  ERROR = 'ERROR',
-  CLIENT_ERROR = 'CLIENT_ERROR',
-  SERVER_ERROR = 'SERVER_ERROR'
-}
-
-export class ConnectionLost extends Error {
-  constructor(msg: string) {
-    super(msg)
-  }
-}
+export class ConnectionLost extends Error {}

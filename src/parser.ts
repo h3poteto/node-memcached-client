@@ -1,4 +1,4 @@
-type Metadata = {
+export type Metadata = {
   key: string
   flags: number
   bytes: number
@@ -30,4 +30,4 @@ const parseCode = (buffer: Buffer) => {
   return code.toString('utf8').replace(/\r\n$/, '')
 }
 
-export { singleDataParser, parseCode, Metadata }
+export { singleDataParser, parseCode }

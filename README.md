@@ -40,5 +40,22 @@ const example = async (client: Memcached) => {
 And I prepared some [examples](example).
 
 
+## Roadmap
+This library does not yet cover all memcached methods. But I will implement all methods.
+
+| memcached-client version | v0.1.0  |
+|--------------------------|---------|
+| get                      | ✔       |
+| set                      | ✔       |
+| delete                   | ✔       |
+| gets                     | not yet |
+| cas                      | not yet |
+| replace                  | not yet |
+| append                   | not yet |
+| prepend                  | not yet |
+| incr/decr                | not yet |
+
+
+
 ## License
 The software is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

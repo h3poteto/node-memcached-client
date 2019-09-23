@@ -37,11 +37,19 @@ export class Connection extends EventEmitter {
   }
 
   public close() {
-    this._connectionClosed = true
-    if (this._socket) {
-      this._socket.end()
-      this._socket = null
-    }
+    return new Promise(resolve => {
+      this._connectionClosed = true
+      if (this._socket) {
+        this._socket.removeAllListeners('error')
+        this._socket.removeAllListeners('timeout')
+        this._socket.removeAllListeners('connect')
+        this._socket.removeAllListeners('close')
+
+        this._socket.end()
+        this._socket = null
+      }
+      resolve()
+    })
   }
 
   private _handleClose() {
@@ -104,15 +112,17 @@ export class Connection extends EventEmitter {
       const command = `set ${key} ${isCompress ? 1 : 0} ${expires} ${byteSize}`
 
       const readData = (chunk: Buffer) => {
-        this._socket!.removeListener('data', readData)
+        this._socket!.removeAllListeners('data')
         const code = parseCode(chunk)
         switch (code) {
           case ResponseCode.EXISTS:
           case ResponseCode.STORED:
           case ResponseCode.NOT_STORED:
-            return resolve(code)
+            resolve(code)
+            return
           default:
-            return reject(chunk.toString())
+            reject(chunk.toString())
+            return
         }
       }
       this._socket.on('data', readData)

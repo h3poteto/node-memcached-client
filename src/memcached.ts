@@ -31,16 +31,18 @@ export class Memcached extends EventEmitter {
       this.connection.on('connected', () => {
         this.emit('connected')
         resolve(this.connection!)
+        return
       })
       this.connection.on('close', () => this.emit('close'))
       this.connection.connect()
+      return
     })
   }
 
-  public close() {
+  public async close() {
     if (this.connection) {
       try {
-        this.connection.close()
+        await this.connection.close()
       } catch (err) {
         console.error(err)
       }

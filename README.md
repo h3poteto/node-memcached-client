@@ -18,16 +18,16 @@ $ yarn add memcached-client
 ```typescript
 import Memcached, { Metadata } from 'memcached-client'
 
-# Connect to your memcached server.
+// Connect to your memcached server.
 const client = new Memcached('127.0.0.1', 11211)
 
 const example = async (client: Memcached) => {
   const connection = await client.connect()
   const code = await connection.set('my-key', 'my-value', false, 0)
-  console.log(code) # => STORED
+  console.log(code) // => STORED
   const data: Metadata | null = await connection.get('my-key')
   if (data) {
-    console.log(data.value) # => my-value
+    console.log(data.value) // => my-value
   }
   await connection.close()
 }

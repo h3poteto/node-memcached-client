@@ -66,14 +66,14 @@ export class Connection extends EventEmitter {
   }
 
   private _handleClose() {
-    console.info('closed')
-    if (!this._connectionClosed) {
+    if (this._connectionClosed) {
+      this.emit('close')
+    } else {
       this.reconnect()
     }
   }
 
   private _handleConnect() {
-    console.info('connected')
     this.emit('connected')
   }
 

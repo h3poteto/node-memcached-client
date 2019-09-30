@@ -69,7 +69,7 @@ export class Connection extends EventEmitter {
     if (this._connectionClosed) {
       this.emit('close')
     } else {
-      this.reconnect()
+      this._reconnect()
     }
   }
 
@@ -77,7 +77,7 @@ export class Connection extends EventEmitter {
     this.emit('connected')
   }
 
-  private reconnect() {
+  private _reconnect() {
     if (this._socket) {
       setTimeout(() => {
         console.warn('reconnecting...')
@@ -86,83 +86,79 @@ export class Connection extends EventEmitter {
     }
   }
 
-  public get(key: string): Promise<Metadata | null> {
+  private _exec(commands: Array<string>): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const command = `get ${key}`
       if (!this._socket) {
         const err = new ConnectionLost('connection is null')
-        reject(err)
-        return
+        return reject(err)
       }
       const readData = (chunk: Buffer) => {
         this._socket!.removeListener('data', readData)
-        const code = parseCode(chunk)
-        switch (code) {
-          case ResponseCode.ERROR:
-          case ResponseCode.SERVER_ERROR:
-          case ResponseCode.CLIENT_ERROR:
-            return reject(code)
-          case ResponseCode.END:
-            return resolve(null)
-          default:
-            return resolve(singleDataParser(chunk))
-        }
+        resolve(chunk)
       }
       this._socket.on('data', readData)
-      this._socket.write(Buffer.from(command, 'utf8'))
-      this._socket.write('\r\n')
+      commands.map(command => {
+        this._socket!.write(Buffer.from(command, 'utf8'))
+        this._socket!.write('\r\n')
+      })
+    })
+  }
+
+  public get(key: string): Promise<Metadata | null> {
+    return new Promise((resolve, reject) => {
+      const command = `get ${key}`
+      this._exec([command])
+        .then(chunk => {
+          const code = parseCode(chunk)
+          switch (code) {
+            case ResponseCode.ERROR:
+            case ResponseCode.SERVER_ERROR:
+            case ResponseCode.CLIENT_ERROR:
+              return reject(code)
+            case ResponseCode.END:
+              return resolve(null)
+            default:
+              return resolve(singleDataParser(chunk))
+          }
+        })
+        .catch(err => reject(err))
     })
   }
 
   public set(key: string, value: string, isCompress: boolean = false, expires: number = 0): Promise<string> {
     return new Promise((resolve, reject) => {
-      if (!this._socket) {
-        const err = new ConnectionLost('connection is null')
-        return reject(err)
-      }
       const byteSize = Buffer.byteLength(value, 'utf8')
       const command = `set ${key} ${isCompress ? 1 : 0} ${expires} ${byteSize}`
-
-      const readData = (chunk: Buffer) => {
-        this._socket!.removeAllListeners('data')
-        const code = parseCode(chunk)
-        switch (code) {
-          case ResponseCode.EXISTS:
-          case ResponseCode.STORED:
-          case ResponseCode.NOT_STORED:
-            return resolve(code)
-          default:
-            return reject(chunk.toString())
-        }
-      }
-      this._socket.on('data', readData)
-      this._socket.write(Buffer.from(command, 'utf8'))
-      this._socket.write('\r\n')
-      this._socket.write(Buffer.from(value, 'utf8'))
-      this._socket.write('\r\n')
+      this._exec([command, value])
+        .then(chunk => {
+          const code = parseCode(chunk)
+          switch (code) {
+            case ResponseCode.EXISTS:
+            case ResponseCode.STORED:
+            case ResponseCode.NOT_STORED:
+              return resolve(code)
+            default:
+              return reject(chunk.toString())
+          }
+        })
+        .catch(err => reject(err))
     })
   }
 
   public delete(key: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      if (!this._socket) {
-        const err = new ConnectionLost('connection is null')
-        return reject(err)
-      }
       const command = `delete ${key}`
-      const readData = (chunk: Buffer) => {
-        this._socket!.removeListener('data', readData)
-        const code = parseCode(chunk)
-        switch (code) {
-          case ResponseCode.DELETED:
-            return resolve(code)
-          default:
-            return reject(chunk.toString())
-        }
-      }
-      this._socket.on('data', readData)
-      this._socket.write(Buffer.from(command, 'utf8'))
-      this._socket.write('\r\n')
+      this._exec([command])
+        .then(chunk => {
+          const code = parseCode(chunk)
+          switch (code) {
+            case ResponseCode.DELETED:
+              return resolve(code)
+            default:
+              return reject(chunk.toString())
+          }
+        })
+        .catch(err => reject(err))
     })
   }
 }

@@ -4,10 +4,10 @@ const client = new Memcached('127.0.0.1', 11211)
 
 client.connect().then(connection => {
   connection.get('hoge').then(data => {
-    if (!data) {
+    if (!data['hoge']) {
       console.log('nothing')
     } else {
-      console.log(data.value)
+      console.log(data['hoge'].value)
     }
   })
 })

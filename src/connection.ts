@@ -1,19 +1,6 @@
 import * as net from 'net'
 import { EventEmitter } from 'events'
-import { singleDataParser, Metadata, parseCode } from './parser'
-
-enum ResponseCode {
-  END = 'END',
-  STORED = 'STORED',
-  NOT_STORED = 'NOT_STORED',
-  NOT_FOUND = 'NOT_FOUND',
-  EXISTS = 'EXISTS',
-  DELETED = 'DELETED',
-  TOUCHED = 'TOUCHED',
-  ERROR = 'ERROR',
-  CLIENT_ERROR = 'CLIENT_ERROR',
-  SERVER_ERROR = 'SERVER_ERROR'
-}
+import { multipleDataParser, Metadata, parseCode, ResponseCode } from './parser'
 
 export class Connection extends EventEmitter {
   public host: string
@@ -104,21 +91,19 @@ export class Connection extends EventEmitter {
     })
   }
 
-  public get(key: string): Promise<Metadata | null> {
+  public get(...keys: Array<string>): Promise<{ [key: string]: Metadata }> {
     return new Promise((resolve, reject) => {
-      const command = `get ${key}`
+      const command = `get ${keys.join(' ')}`
       this._exec([command])
-        .then(chunk => {
-          const code = parseCode(chunk)
+        .then(buffer => {
+          const code = parseCode(buffer)
           switch (code) {
             case ResponseCode.ERROR:
             case ResponseCode.SERVER_ERROR:
             case ResponseCode.CLIENT_ERROR:
               return reject(code)
-            case ResponseCode.END:
-              return resolve(null)
             default:
-              return resolve(singleDataParser(chunk))
+              return resolve(multipleDataParser(buffer))
           }
         })
         .catch(err => reject(err))

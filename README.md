@@ -43,7 +43,7 @@ And I prepared some [examples](example).
 ## Roadmap
 This library does not yet cover all memcached methods. But I will implement all methods.
 
-| memcached-client version | v0.1.0  |
+| memcached-client version | v0.1.x  |
 |--------------------------|---------|
 | get                      | ✔       |
 | set                      | ✔       |

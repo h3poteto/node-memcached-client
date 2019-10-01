@@ -37,7 +37,7 @@ const singleDataParser = (buffer: Buffer) => {
 
 const multipleDataParser = (buffer: Buffer) => {
   let base = 0
-  let metadata: { [key: string]: Metadata } = {}
+  const metadata: { [key: string]: Metadata } = {}
 
   do {
     let start = buffer.indexOf('\r\n', base)

@@ -22,15 +22,21 @@ describe('connection', () => {
   describe('get', () => {
     it('should get a key', async () => {
       await conn.set('test_key', 'hoge', false, 0)
-      await conn.set('test_key_2', 'fuga', false, 0)
       const data: { [key: string]: Metadata } = await conn.get('test_key')
       expect(data['test_key'].value).toEqual('hoge')
     })
 
     it('should get multiple keys', async () => {
+      await conn.set('test_key', 'hoge', false, 0)
+      await conn.set('test_key_2', 'fuga', false, 0)
       const data: { [key: string]: Metadata } = await conn.get('test_key', 'test_key_2')
       expect(data['test_key'].value).toEqual('hoge')
       expect(data['test_key_2'].value).toEqual('fuga')
+    })
+
+    it('key does not exist', async () => {
+      const data = await conn.get('not_exist_key')
+      expect(data['not_exist_key']).toEqual(undefined)
     })
   })
 

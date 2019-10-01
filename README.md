@@ -28,9 +28,9 @@ const example = async (client: Memcached) => {
   const connection = await client.connect()
   const code = await connection.set('my-key', 'my-value', false, 0)
   console.log(code) // => STORED
-  const data: Metadata | null = await connection.get('my-key')
-  if (data) {
-    console.log(data.value) // => my-value
+  const data: { [key: string]: Metadata } = await connection.get('my-key')
+  if (data['my-key']) {
+    console.log(data['my-key'].value) // => my-value
   }
   await connection.close()
 }

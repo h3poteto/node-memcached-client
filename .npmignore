@@ -1,0 +1,10 @@
+node_modules
+./src
+./example
+*.log
+.eslintrc.js
+.gitignore
+.prettierrc
+.travis.yml
+sideci.yml
+tsconfig.json

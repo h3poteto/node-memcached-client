@@ -80,13 +80,17 @@ export class Connection extends EventEmitter {
         return reject(err)
       }
       const readData = (chunk: Buffer) => {
-        this._socket!.removeListener('data', readData)
+        if (this._socket) {
+          this._socket.removeListener('data', readData)
+        }
         resolve(chunk)
       }
       this._socket.on('data', readData)
       commands.map(command => {
-        this._socket!.write(Buffer.from(command, 'utf8'))
-        this._socket!.write('\r\n')
+        if (this._socket) {
+          this._socket.write(Buffer.from(command, 'utf8'))
+          this._socket.write('\r\n')
+        }
       })
     })
   }

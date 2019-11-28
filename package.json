@@ -4,6 +4,9 @@
   "description": "Memcached client for nodejs using typescript",
   "main": "./lib/src/index.js",
   "typings": "./lib/src/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "tsc -p ./",
     "lint": "eslint --ext .js,.ts src",

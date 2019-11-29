@@ -47,4 +47,49 @@ describe('connection', () => {
       expect(code).toEqual('DELETED')
     })
   })
+
+  describe('multiple set', () => {
+    it('should be setted', async () => {
+      conn
+        .set('test_key_1', 'hoge', false, 0)
+        .then(code => {
+          expect(code).toEqual('STORED')
+        })
+        .catch(err => expect(err).toBeNull())
+      conn
+        .set('test_key_2', 'hoge', false, 0)
+        .then(code => {
+          expect(code).toEqual('STORED')
+        })
+        .catch(err => expect(err).toBeNull())
+      conn
+        .set('test_key_3', 'hoge', false, 0)
+        .then(code => {
+          expect(code).toEqual('STORED')
+        })
+        .catch(err => expect(err).toBeNull())
+      // We have to wait to all promise calling are finished.
+      await conn.set('test_key_4', 'hoge', false, 0)
+    })
+  })
+
+  describe('multiple get', () => {
+    it('should get', async () => {
+      await conn.set('test_key', 'hoge', false, 0)
+      conn
+        .get('test_key')
+        .then(data => expect(data['test_key'].value).toEqual('hoge'))
+        .catch(err => expect(err).toBeNull())
+      conn
+        .get('test_key')
+        .then(data => expect(data['test_key'].value).toEqual('hoge'))
+        .catch(err => expect(err).toBeNull())
+      conn
+        .get('test_key')
+        .then(data => expect(data['test_key'].value).toEqual('hoge'))
+        .catch(err => expect(err).toBeNull())
+      // We have to wait to all promise calling are finished.
+      await conn.get('test_key')
+    })
+  })
 })

@@ -1,6 +1,12 @@
 import * as net from 'net'
 import { EventEmitter } from 'events'
 import { multipleDataParser, Metadata, parseCode, ResponseCode } from './parser'
+import async, { AsyncQueue } from 'async'
+
+type CommandQueue = {
+  commands: Array<string>
+  callback: Function
+}
 
 export class Connection extends EventEmitter {
   public host: string
@@ -9,6 +15,7 @@ export class Connection extends EventEmitter {
   private _socket: net.Socket | null
   private _connectionClosed: boolean
   private _reconnectInterval: number
+  private _queue: AsyncQueue<any>
 
   constructor(host: string, port: number, timeout: number) {
     super()
@@ -19,6 +26,27 @@ export class Connection extends EventEmitter {
     this._socket = null
     this._connectionClosed = false
     this._reconnectInterval = 1000
+    this._queue = async.queue((task: CommandQueue, errorCallback) => {
+      if (!this._socket) {
+        const err = new ConnectionLost('connection is null')
+        errorCallback(err)
+        return
+      }
+      const readData = (chunk: Buffer) => {
+        if (this._socket) {
+          this._socket.removeListener('data', readData)
+        }
+        task.callback(chunk)
+        errorCallback(null)
+      }
+      this._socket.on('data', readData)
+      task.commands.map(command => {
+        if (this._socket) {
+          this._socket.write(Buffer.from(command, 'utf8'))
+          this._socket.write('\r\n')
+        }
+      })
+    }, 1)
   }
 
   public connect() {
@@ -75,23 +103,17 @@ export class Connection extends EventEmitter {
 
   private _exec(commands: Array<string>): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      if (!this._socket) {
-        const err = new ConnectionLost('connection is null')
-        return reject(err)
-      }
-      const readData = (chunk: Buffer) => {
-        if (this._socket) {
-          this._socket.removeListener('data', readData)
+      this._queue.push(
+        {
+          commands: commands,
+          callback: (chunk: Buffer) => {
+            resolve(chunk)
+          }
+        } as CommandQueue,
+        err => {
+          if (err) reject(err)
         }
-        resolve(chunk)
-      }
-      this._socket.on('data', readData)
-      commands.map(command => {
-        if (this._socket) {
-          this._socket.write(Buffer.from(command, 'utf8'))
-          this._socket.write('\r\n')
-        }
-      })
+      )
     })
   }
 

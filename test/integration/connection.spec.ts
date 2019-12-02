@@ -73,23 +73,32 @@ describe('connection', () => {
     })
   })
 
-  describe('multiple get', () => {
+  describe('multiple set and get', () => {
     it('should get', async () => {
-      await conn.set('test_key', 'hoge', false, 0)
+      conn.set('test_key', 'hoge', false, 0).then(code => {
+        expect(code).toEqual('STORED')
+      })
       conn
         .get('test_key')
         .then(data => expect(data['test_key'].value).toEqual('hoge'))
         .catch(err => expect(err).toBeNull())
+      conn.set('test_key', 'fuga', false, 0).then(code => {
+        expect(code).toEqual('STORED')
+      })
       conn
         .get('test_key')
-        .then(data => expect(data['test_key'].value).toEqual('hoge'))
+        .then(data => expect(data['test_key'].value).toEqual('fuga'))
         .catch(err => expect(err).toBeNull())
+      conn.set('test_key', 'hogehoge', false, 0).then(code => {
+        expect(code).toEqual('STORED')
+      })
       conn
         .get('test_key')
-        .then(data => expect(data['test_key'].value).toEqual('hoge'))
+        .then(data => expect(data['test_key'].value).toEqual('hogehoge'))
         .catch(err => expect(err).toBeNull())
       // We have to wait to all promise calling are finished.
-      await conn.get('test_key')
+      const data = await conn.get('test_key')
+      expect(data['test_key'].value).toEqual('hogehoge')
     })
   })
 })

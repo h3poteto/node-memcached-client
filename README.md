@@ -1,7 +1,9 @@
 # node-memcached-client
-[![Build Status](https://travis-ci.com/h3poteto/node-memcached-client.svg?branch=master)](https://travis-ci.com/h3poteto/node-memcached-client)
+[![Test](https://github.com/h3poteto/node-memcached-client/actions/workflows/test.yml/badge.svg)](https://github.com/h3poteto/node-memcached-client/actions/workflows/test.yml)
 [![npm](https://img.shields.io/npm/v/memcached-client)](https://www.npmjs.com/package/memcached-client)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/h3poteto/node-memcached-client)](https://github.com/h3poteto/node-memcached-client/releases)
+[![npm](https://img.shields.io/npm/dm/memcached-client)](https://www.npmjs.com/package/memcached-client)
+[![NPM](https://img.shields.io/npm/l/memcached-client)](/LICENSE.txt)
 
 A Memcached client library for node.js. This library written in typescript and define promisified methods.
 

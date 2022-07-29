@@ -40,11 +40,13 @@
   "dependencies": {
     "@types/async": "^3.0.3",
     "@types/node": "^12.7.5",
-    "typescript": "^4.3.5",
-    "async": "^3.1.0"
+    "async": "^3.1.0",
+    "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.18",
+    "@types/istanbul-lib-report": "1.1.1",
+    "@types/istanbul-reports": "3.0.0",
+    "@types/jest": "^28.1.4",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "eslint": "^8.20.0",

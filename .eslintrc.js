@@ -3,17 +3,17 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     sourceType: 'module',
-    project: './tsconfig.json'
+    project: './tsconfig.json',
   },
   env: {
     browser: true,
-    node: true
+    node: true,
   },
-  extends: ['standard', 'prettier'],
+  extends: ['eslint:recommended', 'prettier', 'plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended'],
   globals: {
-    __static: true
+    __static: true,
   },
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint'],
   rules: {
     // allow paren-less arrow functions
     'arrow-parens': 0,
@@ -25,11 +25,11 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
-        argsIgnorePattern: '^_'
-      }
+        argsIgnorePattern: '^_',
+      },
     ],
     camelcase: 'off',
     '@typescript-eslint/camelcase': 'off',
-    'space-before-function-paren': 'off'
-  }
+    'space-before-function-paren': 'off',
+  },
 }

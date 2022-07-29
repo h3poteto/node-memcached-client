@@ -40,7 +40,7 @@ export class Connection extends EventEmitter {
         errorCallback(null)
       }
       this._socket.on('data', readData)
-      task.commands.map(command => {
+      task.commands.map((command) => {
         if (this._socket) {
           this._socket.write(Buffer.from(command, 'utf8'))
           this._socket.write('\r\n')
@@ -53,7 +53,7 @@ export class Connection extends EventEmitter {
     const connectOptions: net.NetConnectOpts = {
       host: this.host,
       port: this.port,
-      timeout: this.timeout
+      timeout: this.timeout,
     }
     this._socket = net.connect(connectOptions)
     this._connectionClosed = false
@@ -65,7 +65,7 @@ export class Connection extends EventEmitter {
   }
 
   public close() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this._connectionClosed = true
       if (this._socket) {
         this._socket.removeAllListeners('error')
@@ -76,7 +76,7 @@ export class Connection extends EventEmitter {
         this._socket.end()
         this._socket = null
       }
-      resolve()
+      resolve(null)
     })
   }
 
@@ -108,9 +108,9 @@ export class Connection extends EventEmitter {
           commands: commands,
           callback: (chunk: Buffer) => {
             resolve(chunk)
-          }
+          },
         } as CommandQueue,
-        err => {
+        (err) => {
           if (err) reject(err)
         }
       )
@@ -121,7 +121,7 @@ export class Connection extends EventEmitter {
     return new Promise((resolve, reject) => {
       const command = `get ${keys.join(' ')}`
       this._exec([command])
-        .then(buffer => {
+        .then((buffer) => {
           const code = parseCode(buffer)
           switch (code) {
             case ResponseCode.ERROR:
@@ -132,7 +132,7 @@ export class Connection extends EventEmitter {
               return resolve(multipleDataParser(buffer))
           }
         })
-        .catch(err => reject(err))
+        .catch((err) => reject(err))
     })
   }
 
@@ -141,7 +141,7 @@ export class Connection extends EventEmitter {
       const byteSize = Buffer.byteLength(value, 'utf8')
       const command = `set ${key} ${isCompress ? 1 : 0} ${expires} ${byteSize}`
       this._exec([command, value])
-        .then(chunk => {
+        .then((chunk) => {
           const code = parseCode(chunk)
           switch (code) {
             case ResponseCode.EXISTS:
@@ -152,7 +152,7 @@ export class Connection extends EventEmitter {
               return reject(chunk.toString())
           }
         })
-        .catch(err => reject(err))
+        .catch((err) => reject(err))
     })
   }
 
@@ -160,7 +160,7 @@ export class Connection extends EventEmitter {
     return new Promise((resolve, reject) => {
       const command = `delete ${key}`
       this._exec([command])
-        .then(chunk => {
+        .then((chunk) => {
           const code = parseCode(chunk)
           switch (code) {
             case ResponseCode.DELETED:
@@ -169,7 +169,7 @@ export class Connection extends EventEmitter {
               return reject(chunk.toString())
           }
         })
-        .catch(err => reject(err))
+        .catch((err) => reject(err))
     })
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "memcached-client",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Memcached client for nodejs using typescript",
   "main": "./lib/src/index.js",
   "typings": "./lib/src/index.d.ts",

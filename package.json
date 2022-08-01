@@ -44,7 +44,7 @@
     "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@types/istanbul-lib-report": "1.1.1",
+    "@types/istanbul-lib-report": "3.0.0",
     "@types/istanbul-reports": "3.0.0",
     "@types/jest": "^28.1.4",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
